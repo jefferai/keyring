@@ -1,12 +1,12 @@
-module github.com/99designs/keyring
+module github.com/jefferai/keyring
 
 go 1.14
 
 require (
 	github.com/danieljoos/wincred v1.0.2
 	github.com/dvsekhvalnov/jose2go v0.0.0-20200901110807-248326c1351b
-	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2
-	github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c
+	github.com/godbus/dbus/v5 v5.0.3
+	github.com/jefferai/go-libsecret v0.0.0-20210105015933-d08a58b018bc
 	github.com/keybase/go-keychain v0.0.0-20190712205309-48d3d31d256d
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mtibben/percent v0.2.1

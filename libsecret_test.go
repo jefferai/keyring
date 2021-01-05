@@ -7,7 +7,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/gsterjov/go-libsecret"
+	"github.com/jefferai/go-libsecret"
 )
 
 // NOTE: These tests are not runnable from a headless environment such as
