@@ -4,7 +4,6 @@ package keyring
 
 import (
 	"encoding/json"
-	"os"
 
 	"github.com/godbus/dbus/v5"
 )
@@ -15,16 +14,18 @@ const (
 )
 
 func init() {
+	// Simply trying to open the session bus can cause problems so don't do it unilaterally
+	/*
+		if os.Getenv("DISABLE_KWALLET") == "1" {
+			return
+		}
 
-	if os.Getenv("DISABLE_KWALLET") == "1" {
-		return
-	}
-
-	// silently fail if dbus isn't available
-	_, err := dbus.SessionBus()
-	if err != nil {
-		return
-	}
+		// silently fail if dbus isn't available
+		_, err := dbus.SessionBus()
+		if err != nil {
+			return
+		}
+	*/
 
 	supportedBackends[KWalletBackend] = opener(func(cfg Config) (Keyring, error) {
 		if cfg.ServiceName == "" {

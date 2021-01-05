@@ -6,16 +6,18 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/godbus/dbus/v5"
 	"github.com/jefferai/go-libsecret"
 )
 
 func init() {
-	// silently fail if dbus isn't available
-	_, err := dbus.SessionBus()
-	if err != nil {
-		return
-	}
+	// Simply trying to open the session bus can cause problems so don't do it unilaterally
+	/*
+		// silently fail if dbus isn't available
+		_, err := dbus.SessionBus()
+		if err != nil {
+			return
+		}
+	*/
 
 	supportedBackends[SecretServiceBackend] = opener(func(cfg Config) (Keyring, error) {
 		if cfg.ServiceName == "" {
