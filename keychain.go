@@ -132,9 +132,6 @@ func (k *keychain) updateItem(kc gokeychain.Keychain, kcItem gokeychain.Item, ac
 		return errors.New("no results")
 	}
 
-	// Don't call SetAccess() as this will cause multiple prompts on update, even when we are not updating the AccessList
-	kcItem.SetAccess(nil)
-
 	if err := gokeychain.UpdateItem(queryItem, kcItem); err != nil {
 		return fmt.Errorf("Failed to update item in keychain: %v", err)
 	}
@@ -178,16 +175,8 @@ func (k *keychain) Set(item Item) error {
 
 	if isTrusted {
 		debugf("Keychain item trusts keyring")
-		kcItem.SetAccess(&gokeychain.Access{
-			Label:               item.Label,
-			TrustedApplications: nil,
-		})
 	} else {
 		debugf("Keychain item doesn't trust keyring")
-		kcItem.SetAccess(&gokeychain.Access{
-			Label:               item.Label,
-			TrustedApplications: []string{},
-		})
 	}
 
 	debugf("Adding service=%q, label=%q, account=%q, trusted=%v to osx keychain %q", k.service, item.Label, item.Key, isTrusted, k.path)
