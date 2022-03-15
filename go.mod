@@ -3,6 +3,7 @@ module github.com/jefferai/keyring
 go 1.17
 
 require (
+	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4
 	github.com/danieljoos/wincred v1.1.2
 	github.com/dvsekhvalnov/jose2go v1.5.0
 	github.com/godbus/dbus/v5 v5.0.4
@@ -12,8 +13,6 @@ require (
 	golang.org/x/sys v0.0.0-20220204135822-1c1b9b1eba6a
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 )
-
-require github.com/keybase/go-keychain v0.0.0-20211119201326-e02f34051621
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
