@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	gokeychain "github.com/99designs/go-keychain"
+	gokeychain "github.com/keybase/go-keychain"
 )
 
 type keychain struct {

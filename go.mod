@@ -13,15 +13,11 @@ require (
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 )
 
-require (
-	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4
-	github.com/99designs/keyring v1.2.1
-)
+require github.com/keybase/go-keychain v0.0.0-20211119201326-e02f34051621
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
-	github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
