@@ -1,9 +1,11 @@
+//go:build !windows
 // +build !windows
 
 package keyring
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -12,33 +14,42 @@ import (
 	"testing"
 )
 
+func runCmd(t *testing.T, cmds ...string) {
+	t.Helper()
+	cmd := exec.Command(cmds[0], cmds[1:]...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(cmd)
+		fmt.Println(string(out))
+		t.Fatal(err)
+	}
+}
+
 func setup(t *testing.T) (*passKeyring, func(t *testing.T)) {
+	t.Helper()
+
 	pwd, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	tmpdir, err := ioutil.TempDir("", "keyring-pass-test")
+	// the default temp directory can't be used because gpg-agent complains with "socket name too long"
+	tmpdir, err := ioutil.TempDir("/tmp", "keyring-pass-test-*")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Initialise a blank GPG homedir; import & trust the test key
 	gnupghome := filepath.Join(tmpdir, ".gnupg")
-	os.Mkdir(gnupghome, os.FileMode(int(0700)))
+	err = os.Mkdir(gnupghome, os.FileMode(int(0700)))
+	if err != nil {
+		t.Fatal(err)
+	}
 	os.Setenv("GNUPGHOME", gnupghome)
 	os.Unsetenv("GPG_AGENT_INFO")
 	os.Unsetenv("GPG_TTY")
-	cmd := exec.Command("gpg", "--import", filepath.Join(pwd, "testdata", "test-gpg.key"))
-	err = cmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
-	cmd = exec.Command("gpg", "--import-ownertrust", filepath.Join(pwd, "testdata", "test-ownertrust-gpg.txt"))
-	err = cmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
+	runCmd(t, "gpg", "--import", filepath.Join(pwd, "testdata", "test-gpg.key"))
+	runCmd(t, "gpg", "--import-ownertrust", filepath.Join(pwd, "testdata", "test-ownertrust-gpg.txt"))
 
 	passdir := filepath.Join(tmpdir, ".password-store")
 	k := &passKeyring{
@@ -47,10 +58,7 @@ func setup(t *testing.T) (*passKeyring, func(t *testing.T)) {
 		prefix:  "keyring",
 	}
 
-	cmd, err = k.pass("init", "test@example.com")
-	if err != nil {
-		t.Fatal(err)
-	}
+	cmd := k.pass("init", "test@example.com")
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
@@ -58,6 +66,7 @@ func setup(t *testing.T) (*passKeyring, func(t *testing.T)) {
 	}
 
 	return k, func(t *testing.T) {
+		t.Helper()
 		os.RemoveAll(tmpdir)
 	}
 }
@@ -195,5 +204,48 @@ func TestPassKeyringGetWhenNotEmpty(t *testing.T) {
 	}
 	if !bytes.Equal(v1.Data, item.Data) {
 		t.Fatal("Expected item not returned")
+	}
+}
+
+func TestPassKeyringKeysWithSymlink(t *testing.T) {
+	k, teardown := setup(t)
+	defer teardown(t)
+
+	items := []Item{
+		{Key: "llamas", Data: []byte("llamas are great")},
+		{Key: "alpacas", Data: []byte("alpacas are better")},
+		{Key: "africa/elephants", Data: []byte("who doesn't like elephants")},
+	}
+
+	for _, item := range items {
+		if err := k.Set(item); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	s := filepath.Join(t.TempDir(), "newsymlink")
+	err := os.Symlink(k.dir, s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	k.dir = s
+
+	keys, err := k.Keys()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(keys) != len(items) {
+		t.Fatalf("Expected %d keys, got %d", len(items), len(keys))
+	}
+
+	expectedKeys := []string{
+		"africa/elephants",
+		"alpacas",
+		"llamas",
+	}
+
+	if !reflect.DeepEqual(keys, expectedKeys) {
+		t.Fatalf("Expected keys %v, got %v", expectedKeys, keys)
 	}
 }

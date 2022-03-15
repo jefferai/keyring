@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package keyring
@@ -22,6 +23,7 @@ import (
 //     and provides the Prompt interface using the go-libsecret library.
 
 func libSecretSetup(t *testing.T) (Keyring, func(t *testing.T)) {
+	t.Helper()
 	if os.Getenv("GITHUB_ACTIONS") != "" {
 		t.Skip("Skipping testing in CI environment")
 	}
@@ -35,6 +37,7 @@ func libSecretSetup(t *testing.T) (Keyring, func(t *testing.T)) {
 		service: service,
 	}
 	return kr, func(t *testing.T) {
+		t.Helper()
 		if err := kr.deleteCollection(); err != nil {
 			t.Fatal(err)
 		}
@@ -139,5 +142,27 @@ func TestLibSecretRemoveWhenNotEmpty(t *testing.T) {
 
 	if err := kr.Remove("llamas"); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestLibSpecialCharacters(t *testing.T) {
+	decoded := decodeKeyringString("keyring_2dtest")
+	if decoded != "keyring-test" {
+		t.Fatal("incorrect decodeKeyringString")
+	}
+
+	decoded = decodeKeyringString("keyring_2d_2dtest")
+	if decoded != "keyring--test" {
+		t.Fatal("incorrect decodeKeyringString")
+	}
+
+	decoded = decodeKeyringString("keyring_2dtest_2d_2d")
+	if decoded != "keyring-test--" {
+		t.Fatal("incorrect decodeKeyringString")
+	}
+
+	decoded = decodeKeyringString("_2d_2dkeyring_2dtest_2d_2d")
+	if decoded != "--keyring-test--" {
+		t.Fatal("incorrect decodeKeyringString")
 	}
 }

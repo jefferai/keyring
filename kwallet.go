@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package keyring
@@ -14,18 +15,14 @@ const (
 )
 
 func init() {
-	// Simply trying to open the session bus can cause problems so don't do it unilaterally
-	/*
-		if os.Getenv("DISABLE_KWALLET") == "1" {
-			return
-		}
+	if os.Getenv("DISABLE_KWALLET") == "1" {
+		return
+	}
 
-		// silently fail if dbus isn't available
-		_, err := dbus.SessionBus()
-		if err != nil {
-			return
-		}
-	*/
+	_, err := dbus.SessionBus()
+	if err != nil {
+		return
+	}
 
 	supportedBackends[KWalletBackend] = opener(func(cfg Config) (Keyring, error) {
 		if cfg.ServiceName == "" {
@@ -90,6 +87,9 @@ func (k *kwalletKeyring) Get(key string) (Item, error) {
 	data, err := k.wallet.ReadEntry(k.handle, k.folder, key, k.appID)
 	if err != nil {
 		return Item{}, err
+	}
+	if len(data) == 0 {
+		return Item{}, ErrKeyNotFound
 	}
 
 	item := Item{}
@@ -169,7 +169,7 @@ func newKwallet() (*kwalletBinding, error) {
 	}, nil
 }
 
-// Dumb Dbus bindings for kwallet bindings with types
+// Dumb Dbus bindings for kwallet bindings with types.
 type kwalletBinding struct {
 	dbus dbus.BusObject
 }
