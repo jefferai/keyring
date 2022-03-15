@@ -19,6 +19,7 @@ func init() {
 		return
 	}
 
+	// silently fail if dbus isn't available
 	_, err := dbus.SessionBus()
 	if err != nil {
 		return
