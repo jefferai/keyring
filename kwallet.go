@@ -5,6 +5,7 @@ package keyring
 
 import (
 	"encoding/json"
+	"os"
 
 	"github.com/godbus/dbus/v5"
 )

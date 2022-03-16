@@ -10,8 +10,6 @@ import (
 
 	"github.com/jefferai/go-libsecret"
 	"strings"
-
-	dbus "github.com/godbus/dbus/v5"
 )
 
 func init() {
